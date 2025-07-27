@@ -1,4 +1,5 @@
 const questions = [
+    // Perguntas do quiz
     {
         number: 1,
         title: "Qual é a cor favorita dela?",
@@ -240,6 +241,8 @@ const questions = [
         },
     },
 ];
+
+// Elementos do DOM e variáveis para controlação de aplicação
 const questionTitle = document.querySelector("#question-title");
 const questionOptions = document.querySelector("#question-options");
 const score = document.querySelector("#score");
@@ -251,14 +254,17 @@ const restart = document.querySelector("#restart");
 let scoreValue = 0;
 let chanceValue = 2;
 let actualQuestion = 0;
+let timeAnimation;
 
+// Monta a questão com base na variavel de controle na qual é usada para navegar na lista de questões
 const montQuestion = () => {
-    const question = questions[actualQuestion];
+    const question = questions[actualQuestion]; // Pega a questão atual
 
-    questionTitle.textContent = `${question.number} - ${question.title}`;
+    questionTitle.textContent = `${question.number} - ${question.title}`; // Seta o titulo e numero de questão
 
-    questionOptions.innerHTML = "";
+    questionOptions.innerHTML = ""; // limpa as questão atual
 
+    // Com base na função monta opição por opição
     const firstOption = montOption(question.firstOption);
     questionOptions.appendChild(firstOption);
 
@@ -272,10 +278,13 @@ const montQuestion = () => {
     questionOptions.appendChild(fourthOption);
 };
 
+// Monta opição por opição e retorna para ser usada
 const montOption = (option) => {
+    // Cria um elemento no html
+
     const li = document.createElement("li");
-    li.setAttribute("data-correct", option.correct);
-    li.addEventListener("click", clickOption);
+    li.setAttribute("data-correct", option.correct); // Seta as opções com atributos para verificação
+    li.addEventListener("click", clickOption); // Adiciona o evento de click
 
     const letter = document.createElement("span");
     letter.className = "letter";
@@ -284,26 +293,61 @@ const montOption = (option) => {
 
     const response = document.createElement("span");
     response.className = "response";
-    response.textContent = option.response;
+    response.textContent = option.response; // Montra as resposta
     li.appendChild(response);
 
-    return li;
+    // Animação para o icone de cada opção
+
+    let icon;
+
+    if (li.getAttribute("data-correct")) {
+        icon = montIcon("check");
+    } else {
+        icon = montIcon("xmark");
+    }
+
+    li.appendChild(icon);
+
+    return li; // Retorna opição por opição já montada
 };
 
+// Montar o icone da animação
+const montIcon = (icon) => {
+    const div = document.createElement("div");
+
+    div.classList.add("icon");
+    div.innerHTML = `<i class="fas fa-${icon}"></i>`;
+
+    return div;
+};
+
+// Verifica se a opição clicada é a correta e ativa as animações
 const clickOption = function () {
-    const correct = this.getAttribute("data-correct");
+    clearTimeout(timeAnimation); // Limpa o tempo da animação atual
+    toggleOverlay(); // Mostra o elemento para evitar doble-clicks
+    const correct = this.getAttribute("data-correct"); // Pega o atributo das opições
+    const icon = this.querySelector(".icon"); // Pega o icone
     if (correct) {
         actualQuestion++;
         scoreValue += 10;
         chanceValue = 2;
+
         chance.textContent = chanceValue;
         score.textContent = scoreValue;
+
+        icon.classList.add("animation-correct");
     } else {
         chanceValue--;
+
         chance.textContent = chanceValue;
+        icon.classList.add("animation-incorrect");
     }
 
-    checkActualStage();
+    timeAnimation = setTimeout(() => {
+        checkActualStage();
+        icon.className = "icon";
+        toggleOverlay();
+    }, 2000);
 };
 
 const checkActualStage = () => {
@@ -331,6 +375,10 @@ const checkActualStage = () => {
 
 const showMessage = (text) => {
     message.innerHTML = text;
+};
+
+const toggleOverlay = () => {
+    document.querySelector("#overlay-animation").classList.toggle("hide");
 };
 
 restart.addEventListener("click", (e) => {
