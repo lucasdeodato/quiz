@@ -245,6 +245,7 @@ const questions = [
 // Elementos do DOM e variáveis para controlação de aplicação
 const questionTitle = document.querySelector("#question-title");
 const questionOptions = document.querySelector("#question-options");
+const loading = document.querySelector("#loading");
 const score = document.querySelector("#score");
 const chance = document.querySelector("#chances");
 const overlay = document.querySelector("#overlay");
@@ -283,8 +284,9 @@ const montOption = (option) => {
     // Cria um elemento no html
 
     const li = document.createElement("li");
-    li.setAttribute("data-correct", option.correct); // Seta as opções com atributos para verificação
-    li.addEventListener("click", clickOption); // Adiciona o evento de click
+    li.addEventListener("click", function () {
+        clickOption(this, option.correct);
+    }); // Adiciona o evento de click
 
     const letter = document.createElement("span");
     letter.className = "letter";
@@ -300,7 +302,7 @@ const montOption = (option) => {
 
     let icon;
 
-    if (li.getAttribute("data-correct")) {
+    if (option.correct) {
         icon = montIcon("check");
     } else {
         icon = montIcon("xmark");
@@ -322,11 +324,13 @@ const montIcon = (icon) => {
 };
 
 // Verifica se a opição clicada é a correta e ativa as animações
-const clickOption = function () {
+const clickOption = function (thisElement, correct) {
+    loadingFunction();
     clearTimeout(timeAnimation); // Limpa o tempo da animação atual
-    toggleOverlay(); // Mostra o elemento para evitar doble-clicks
-    const correct = this.getAttribute("data-correct"); // Pega o atributo das opições
-    const icon = this.querySelector(".icon"); // Pega o icone
+    questionOptions.style.pointerEvents = "none";
+
+    const icon = thisElement.querySelector(".icon");
+
     if (correct) {
         actualQuestion++;
         scoreValue += 10;
@@ -344,9 +348,10 @@ const clickOption = function () {
     }
 
     timeAnimation = setTimeout(() => {
+        loadingFunction();
         checkActualStage();
         icon.className = "icon";
-        toggleOverlay();
+        questionOptions.style.pointerEvents = "all";
     }, 2000);
 };
 
@@ -377,8 +382,8 @@ const showMessage = (text) => {
     message.innerHTML = text;
 };
 
-const toggleOverlay = () => {
-    document.querySelector("#overlay-animation").classList.toggle("hide");
+const loadingFunction = () => {
+    loading.classList.toggle("active");
 };
 
 restart.addEventListener("click", (e) => {
